@@ -35,7 +35,7 @@ class OpenGLRenderer {
   render(camera: Camera, prog: ShaderProgram, drawables: Array<Drawable>, time: number) {
     let model = mat4.create();
     let viewProj = mat4.create();
-    prog.setTime(time * 0.1);
+    prog.setTime(time * 0.02);
 
     mat4.identity(model);
     mat4.multiply(viewProj, camera.projectionMatrix, camera.viewMatrix);

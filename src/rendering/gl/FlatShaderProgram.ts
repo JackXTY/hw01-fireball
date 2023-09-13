@@ -1,9 +1,9 @@
 import {vec2, vec3, vec4, mat4} from 'gl-matrix';
 import Drawable from './Drawable';
 import {gl} from '../../globals';
-import ShaderProgram, { Shader } from './ShaderProgram';
+import ShaderProgram, { Shader, activeProgram, setActiveProgram } from './ShaderProgram';
 
-var activeProgram: WebGLProgram = null;
+// var activeProgram: WebGLProgram = null;
 
 class FlatShaderProgram {
   prog: WebGLProgram;
@@ -39,7 +39,8 @@ class FlatShaderProgram {
   use() {
     if (activeProgram !== this.prog) {
       gl.useProgram(this.prog);
-      activeProgram = this.prog;
+      setActiveProgram(this.prog);
+      // activeProgram = this.prog;
     }
   }
 

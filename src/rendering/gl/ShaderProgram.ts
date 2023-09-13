@@ -2,7 +2,11 @@ import {vec4, mat4} from 'gl-matrix';
 import Drawable from './Drawable';
 import {gl} from '../../globals';
 
-var activeProgram: WebGLProgram = null;
+export var activeProgram: WebGLProgram = null;
+
+export function setActiveProgram(newActivrProgram: WebGLProgram){
+  activeProgram = newActivrProgram;
+}
 
 export class Shader {
   shader: WebGLShader;
@@ -55,7 +59,7 @@ class ShaderProgram {
   use() {
     if (activeProgram !== this.prog) {
       gl.useProgram(this.prog);
-      activeProgram = this.prog;
+      setActiveProgram(this.prog);
     }
   }
 
