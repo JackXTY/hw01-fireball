@@ -12,6 +12,11 @@ export class Shader {
   shader: WebGLShader;
 
   constructor(type: number, source: string) {
+
+    if(source.indexOf("INCLUDE_TOOL_FUNCTIONS") > 0){
+      source = source.replace("INCLUDE_TOOL_FUNCTIONS", require('../../shaders/tool.glsl'));
+    }
+
     this.shader = gl.createShader(type);
     gl.shaderSource(this.shader, source);
     gl.compileShader(this.shader);

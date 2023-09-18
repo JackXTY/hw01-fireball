@@ -15,22 +15,22 @@ import ShaderProgram, {Shader}  from './rendering/gl/ShaderProgram';
 const controls = {
   tesselations: 5,
   'Load Scene': loadScene, // A function pointer, essentially
-  'color': [255, 0, 0, 255]
+  'color': [255, 255, 0, 255]
 };
 
 let icosphere: Icosphere;
 let square: Square;
-let cube: Cube;
+// let cube: Cube;
 let prevTesselations: number = 5;
 let time: number = 0;
 
 function loadScene() {
-  icosphere = new Icosphere(vec3.fromValues(0, -1, 0), 1, controls.tesselations);
+  icosphere = new Icosphere(vec3.fromValues(0, 0, 0), 2.5, controls.tesselations);
   icosphere.create();
   square = new Square(vec3.fromValues(0, 0, 0));
   square.create();
-  cube = new Cube(vec3.fromValues(0, 1.2, 0), vec3.fromValues(0.75, 0.75, 0.75));
-  cube.create();
+  // cube = new Cube(vec3.fromValues(0, 1.2, 0), vec3.fromValues(0.75, 0.75, 0.75));
+  // cube.create();
 }
 
 function main() {
@@ -78,7 +78,6 @@ function main() {
 
   const renderer = new OpenGLRenderer(canvas);
   renderer.setClearColor(164.0 / 255.0, 233.0 / 255.0, 1.0, 1);
-  
 
   const flat = new FlatShaderProgram([
     new Shader(gl.VERTEX_SHADER, require('./shaders/flat-vert.glsl')),
@@ -120,13 +119,11 @@ function main() {
     }
      
     lambert.setGeometryColor(vec4.fromValues(controls.color[0] / 255, controls.color[1] / 255, controls.color[2] / 255, controls.color[3] / 255));
-    
-    
 
     renderer.render(camera, lambert, [
       icosphere,
       // square,
-      cube
+      // cube
     ], time);
     
     stats.end();

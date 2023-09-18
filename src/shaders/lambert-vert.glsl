@@ -31,32 +31,38 @@ out vec4 fs_Nor;            // The array of normals that has been transformed by
 out vec4 fs_LightVec;       // The direction in which our virtual light lies, relative to each vertex. This is implicitly passed to the fragment shader.
 out vec4 fs_Col;            // The color of each vertex. This is implicitly passed to the fragment shader.
 out vec4 fs_Pos;
+out vec4 fs_Wpos;
 
 const vec4 lightPos = vec4(5, 5, 3, 1); //The position of our virtual light, which is used to compute the shading of
                                         //the geometry in the fragment shader.
 
+#define TWO_PI 6.283185f
 
-vec3 random3(vec3 pos){
-    return fract(vec3(
-        9175.3f * cos(dot(pos, vec3(135.235f, 593.3f, -354.1f))), 
-        124.9f * sin(dot(pos, vec3(937.1f, -2031.1f, 24.6f))), 
-        -1234.62f * sin(dot(pos, vec3(-752.91f, -468.57f, 462.24f)))
-    ));
+INCLUDE_TOOL_FUNCTIONS
+
+float shiftVertex(vec3 pos, float freq, float scale, float time, float speed)
+{
+    pos += vec3(897.0f, 134.8f, -234.9f);
+    pos *= freq;
+    pos += vec3(sin(time * speed));
+    pos = sin(pos + 0.5f * cos(pos + 2.0f * sin(pos)));
+    float d = dot(vec3(1.0f), pos);
+    return (sin(d) + 1.0f) * scale * 0.5f;
 }
 
-float worleyNoise(vec3 pos){
-    float sum = 0.0f;
-    float minDis = 1.0f;
-    for(int dx = -1; dx <= 1; dx++){
-        for(int dy = -1; dy <= 1; dy++){
-            for(int dz = -1; dz <= 1; dz++){
-                vec3 grid = floor(pos + vec3(0.001f, 0.001f, 0.001f) + vec3(dx, dy, dz));
-                float dis = length(grid + random3(grid) - pos);
-                minDis = min(dis, minDis);
-            }
-        }
+float fbmWorley(vec3 pos, int iteration){
+    float amp = 0.5f;
+    float freq = 1.0f;
+    float res = 0.0f;
+    for(int i = 0; i < 3; i++)
+    {
+        // noise += amp * 0.7f * clamp(perlinNoise(pos * 3.0f * freq) + 0.5f, 0.0f, 1.0f);
+        // noise += amp * worleyNoise(pos * 2.5f * freq);
+        res += amp * (1.0f - abs(worleyNoise(pos * freq)));
+        freq *= 2.0f;
+        amp /= 2.0f;
     }
-    return 1.0f - minDis;
+    return res;
 }
 
 void main()
@@ -64,16 +70,35 @@ void main()
     fs_Col = vs_Col;                         // Pass the vertex colors to the fragment shader for interpolation
 
     mat3 invTranspose = mat3(u_ModelInvTr);
-    fs_Nor = vec4(invTranspose * vec3(vs_Nor), 0);          // Pass the vertex normals to the fragment shader for interpolation.
-                                                            // Transform the geometry's normals by the inverse transpose of the
-                                                            // model matrix. This is necessary to ensure the normals remain
-                                                            // perpendicular to the surface after the surface is transformed by
-                                                            // the model matrix.
-    
-    vec3 vPos = vs_Pos.xyz + 0.35f * worleyNoise(vs_Pos.xyz * 2.5f) * normalize(fs_Nor.xyz) * sin(u_Time + cos(u_Time));
+    fs_Nor = vec4(invTranspose * vec3(vs_Nor), 0);
+    // Pass the vertex normals to the fragment shader for interpolation.
+    // Transform the geometry's normals by the inverse transpose of the
+    // model matrix. This is necessary to ensure the normals remain
+    // perpendicular to the surface after the surface is transformed by
+    // the model matrix.
 
-    vec4 modelposition = u_Model * vec4(vPos, 1.0f);   // Temporarily store the transformed vertex positions for use below
-    fs_Pos = modelposition;
+    // cogigs, to be binded with gui
+    const float shiftScale = 0.5f;
+    const float shiftFreq = 6.0f;
+    const float shiftSpeed = 0.1f;
+
+    const float detailFreq = 15.0f;
+    const float detailScale = 0.1f;
+
+    vec3 dir = normalize(fs_Nor.xyz);
+    float t = TWO_PI * random(vs_Pos.xyz) + u_Time;
+    vec3 pos = vs_Pos.xyz;
+
+    // basic shift, with sin & cos
+    pos = pos + dir * shiftVertex(pos, shiftFreq, shiftScale, t, shiftSpeed);
+    // detail shift, with noise (fbm)
+    float tr = 0.5f + 0.5f * sin(t + cos(t));
+    pos += detailScale * fbmWorley(vs_Pos.xyz * detailFreq, 3) * dir * tr;
+    //pos += detailScale * worleyNoise(vs_Pos.xyz * detailFreq) * dir * tr;
+
+    fs_Pos = vec4(pos, 1.0f);
+    vec4 modelposition = u_Model * vec4(pos, 1.0f);   // Temporarily store the transformed vertex positions for use below
+    fs_Wpos = modelposition;
 
     fs_LightVec = lightPos - modelposition;  // Compute the direction in which the light source lies
 
