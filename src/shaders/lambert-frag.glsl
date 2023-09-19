@@ -24,7 +24,6 @@ in vec4 fs_Wpos;
 out vec4 out_Col; // This is the final output color that you will see on your
                   // screen for the pixel that is currently being processed.
 
-
 INCLUDE_TOOL_FUNCTIONS
 
 float fbmPerlin(vec3 pos, int iteration){
@@ -47,8 +46,9 @@ void main()
     vec3 col = vec3(0.0f, 0.0f, 0.0f);
     // col += 0.5f * worleyNoise(fs_Pos.xyz * 2.5f) * u_Color.xyz;
 
-    float noise = fbmPerlin(normalize(fs_Pos.xyz * 3.0f), 3);
-    col += mix(vec3(1.0f, 1.0f, 0.0f), vec3(0.9f, 0.3f, 0.0f), noise);
+    float noise = fbmPerlin(normalize(fs_Pos.xyz) * 3.0f, 3);
+    float heightFactor = 1.0f + 2.0f * smoothstep(2.0f, 5.0f, length(fs_Pos.xyz));
+    col += mix(vec3(1.0f, 1.0f, 0.0f), vec3(0.9f, 0.3f, 0.0f), noise) * heightFactor;
     
     out_Col = vec4(col, u_Color.a);
 }
