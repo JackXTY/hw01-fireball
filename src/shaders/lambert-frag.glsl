@@ -26,6 +26,12 @@ out vec4 out_Col; // This is the final output color that you will see on your
 
 INCLUDE_TOOL_FUNCTIONS
 
+float smootherstep(float edge0, float edge1, float x)
+{
+    x = clamp((x - edge0)/(edge1 - edge0), 0.0, 1.0);
+    return x*x*x*(x*(x*6.0 - 15.0) + 10.0);
+}
+
 float fbmPerlin(vec3 pos, int iteration){
     float amp = 0.5f;
     float freq = 1.0f;
@@ -47,7 +53,7 @@ void main()
     // col += 0.5f * worleyNoise(fs_Pos.xyz * 2.5f) * u_Color.xyz;
 
     float noise = fbmPerlin(normalize(fs_Pos.xyz) * 3.0f, 3);
-    float heightFactor = 1.0f + 2.0f * smoothstep(2.0f, 5.0f, length(fs_Pos.xyz));
+    float heightFactor = 1.0f + 2.0f * smootherstep(2.0f, 5.0f, length(fs_Pos.xyz));
     col += mix(vec3(1.0f, 1.0f, 0.0f), vec3(0.9f, 0.3f, 0.0f), noise) * heightFactor;
     
     out_Col = vec4(col, u_Color.a);

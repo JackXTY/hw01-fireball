@@ -21,7 +21,6 @@ vec3 baseCol1 = vec3(0.5, 0.5, 0.5);
 
 INCLUDE_TOOL_FUNCTIONS
 
-
 vec3 star(vec3 ray, float gridNum, vec3 bound){
   // divide into 3D grid according to ray direction
   vec3 samplePos = ray * gridNum;

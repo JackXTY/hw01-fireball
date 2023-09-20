@@ -40,14 +40,28 @@ const vec4 lightPos = vec4(5, 5, 3, 1); //The position of our virtual light, whi
 
 INCLUDE_TOOL_FUNCTIONS
 
-float shiftVertex(vec3 pos, float freq, float scale, float time, float speed)
+float impulse(float k, float x)
+{
+    float h = k * x;
+    return h * exp(1.0 - h);
+}
+
+float parabola(float x, float k)
+{
+    return pow(4.0*x*(1.0-x), k);
+}
+
+float shiftVertex(vec3 pos, float freq, float scale, float time, float speed, float smoothness)
 {
     pos += vec3(897.0f, 134.8f, -234.9f);
     pos *= freq;
     pos += vec3(sin(time * speed));
     pos = sin(pos + 0.5f * cos(pos + 2.0f * sin(pos)));
     float d = dot(vec3(1.0f), pos);
-    return (sin(d) + 1.0f) * scale * 0.5f;
+    // return (sin(d) + 1.0f) * scale * 0.5f;
+    d = (sin(d) + 1.0f) * 0.5f;
+    d = parabola(d / 2.0, smoothness);
+    return d * scale;
 }
 
 float fbmWorley(vec3 pos, int iteration){
@@ -81,6 +95,7 @@ void main()
     const float shiftScale = 0.5f;
     const float shiftFreq = 6.0f;
     const float shiftSpeed = 0.1f;
+    const float shiftSmoothness = 0.6f;
 
     const float detailFreq = 15.0f;
     const float detailScale = 0.1f;
@@ -90,7 +105,7 @@ void main()
     vec3 pos = vs_Pos.xyz;
 
     // basic shift, with sin & cos
-    pos = pos + dir * shiftVertex(pos, shiftFreq, shiftScale, t, shiftSpeed);
+    pos = pos + dir * shiftVertex(pos, shiftFreq, shiftScale, t, shiftSpeed, shiftSmoothness);
     // detail shift, with noise (fbm)
     float tr = 0.5f + 0.5f * sin(t + cos(t));
     pos += detailScale * fbmWorley(vs_Pos.xyz * detailFreq, 3) * dir * tr;
