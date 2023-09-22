@@ -21,6 +21,13 @@ uniform mat4 u_ViewProj;    // The matrix that defines the camera's transformati
 
 uniform float u_Time;
 
+uniform float u_ShiftScale;
+uniform float u_ShiftFreq;
+uniform float u_ShiftSpeed;
+uniform float u_ShiftSmoothness;
+uniform float u_DetailFreq;
+uniform float u_DetailScale;
+
 in vec4 vs_Pos;             // The array of vertex positions passed to the shader
 
 in vec4 vs_Nor;             // The array of vertex normals passed to the shader
@@ -92,23 +99,23 @@ void main()
     // the model matrix.
 
     // cogigs, to be binded with gui
-    const float shiftScale = 0.5f;
-    const float shiftFreq = 6.0f;
-    const float shiftSpeed = 0.1f;
-    const float shiftSmoothness = 0.6f;
+    // const float u_ShiftScale = 0.5f;
+    // const float u_ShiftFreq = 6.0f;
+    // const float u_ShiftSpeed = 0.1f;
+    // const float u_ShiftSmoothness = 0.6f;
 
-    const float detailFreq = 15.0f;
-    const float detailScale = 0.1f;
+    // const float u_DetailFreq = 15.0f;
+    // const float u_DetailScale = 0.1f;
 
     vec3 dir = normalize(fs_Nor.xyz);
     float t = TWO_PI * random(vs_Pos.xyz) + u_Time;
     vec3 pos = vs_Pos.xyz;
 
     // basic shift, with sin & cos
-    pos = pos + dir * shiftVertex(pos, shiftFreq, shiftScale, t, shiftSpeed, shiftSmoothness);
+    pos = pos + dir * shiftVertex(pos, u_ShiftFreq, u_ShiftScale, t, u_ShiftSpeed, u_ShiftSmoothness);
     // detail shift, with noise (fbm)
     float tr = 0.5f + 0.5f * sin(t + cos(t));
-    pos += detailScale * fbmWorley(vs_Pos.xyz * detailFreq, 3) * dir * tr;
+    pos += u_DetailScale * fbmWorley(vs_Pos.xyz * u_DetailFreq, 3) * dir * tr;
     //pos += detailScale * worleyNoise(vs_Pos.xyz * detailFreq) * dir * tr;
 
     fs_Pos = vec4(pos, 1.0f);

@@ -12,10 +12,33 @@ import ShaderProgram, {Shader}  from './rendering/gl/ShaderProgram';
 
 // Define an object with application parameters and button callbacks
 // This will be referred to by dat.GUI's functions that add GUI elements.
+
+function resetToDefault(){
+  console.log("Reset!");
+  controls.color_0 = [255, 255, 0, 255];
+  controls.color_1 = [230, 77, 0, 255];
+  controls['noise frequency'] = 3.0;
+  controls.shiftScale = 0.5;
+  controls.shiftFreq = 6.0;
+  controls.shiftSpeed = 0.1;
+  controls.shiftSmoothness = 0.6;
+  controls.detailFreq = 15.0;
+  controls.detailScale = 0.1;
+}
+
 const controls = {
   tesselations: 5,
   'Load Scene': loadScene, // A function pointer, essentially
-  'color': [255, 255, 0, 255]
+  color_0: [255, 255, 0, 255],
+  color_1: [230, 77, 0, 255],
+  'noise frequency' : 3.0,
+  shiftScale : 0.5,
+  shiftFreq : 6.0,
+  shiftSpeed : 0.1,
+  shiftSmoothness : 0.6,
+  detailFreq : 15.0,
+  detailScale : 0.1,
+  'Reset Button' : resetToDefault
 };
 
 let icosphere: Icosphere;
@@ -58,8 +81,17 @@ function main() {
   // Add controls to the gui
   const gui = new DAT.GUI();
   gui.add(controls, 'tesselations', 0, 8).step(1);
-  gui.addColor(controls, 'color');
+  gui.addColor(controls, 'color_0');
+  gui.addColor(controls, 'color_1');
+  gui.add(controls, 'noise frequency', 0, 10);
+  gui.add(controls, 'shiftScale', 0, 2);
+  gui.add(controls, 'shiftFreq', 0, 20);
+  gui.add(controls, 'shiftSpeed', 0, 2);
+  gui.add(controls, 'shiftSmoothness', 0, 2);
+  gui.add(controls, 'detailFreq', 0, 20);
+  gui.add(controls, 'detailScale', 0, 2);
   gui.add(controls, 'Load Scene');
+  gui.add(controls, 'Reset Button');
 
   // get canvas and webgl context
   const canvas = <HTMLCanvasElement> document.getElementById('canvas');
@@ -118,7 +150,10 @@ function main() {
       icosphere.create();
     }
      
-    lambert.setGeometryColor(vec4.fromValues(controls.color[0] / 255, controls.color[1] / 255, controls.color[2] / 255, controls.color[3] / 255));
+    lambert.setGeometryColor0(vec4.fromValues(controls.color_0[0] / 255, controls.color_0[1] / 255, controls.color_0[2] / 255, controls.color_0[3] / 255));
+    lambert.setGeometryColor1(vec4.fromValues(controls.color_1[0] / 255, controls.color_1[1] / 255, controls.color_1[2] / 255, controls.color_1[3] / 255));
+    lambert.setNoiseFreq(controls['noise frequency']);
+    lambert.setShiftAndDetail(controls);
 
     renderer.render(camera, lambert, [
       icosphere,
